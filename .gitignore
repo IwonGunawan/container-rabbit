@@ -1,0 +1,18 @@
+# Specifies intentionally untracked files to ignore when using Git
+# http://git-scm.com/docs/gitignore
+
+node_modules/
+tmp/
+temp/
+logs/
+uploads/
+
+.env
+private.pem
+.DS_Store
+Thumbs.db
+UserInterfaceState.xcuserstate
+*.db
+
+config/config.json
+package-lock.json
