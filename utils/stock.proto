@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.super.stock";
+option java_outer_classname = "StockProto";
+option objc_class_prefix = "STK";
+
+package stock;
+
+
+service StockService {
+    rpc Setup (Request) returns (Response) {}
+}
+
+message Request{
+    string message = 1;
+}
+
+message Response{
+    int32 code = 1;
+    string msg = 2;
+}
