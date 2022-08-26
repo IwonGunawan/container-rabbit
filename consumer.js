@@ -1,5 +1,8 @@
+require("./utils/db")
 
 var amqp = require("amqplib/callback_api")
+const Stock = require("./models/stock");
+const GLOBAL = require("./utils/global");
 
 amqp.connect("amqp://localhost", function(error0, connect){
     if (error0) {
@@ -16,10 +19,16 @@ amqp.connect("amqp://localhost", function(error0, connect){
         })
 
         channel.prefetch(1) // fair-dispatch : pembagian tugas secara adil
-        channel.consume(queue, function(msg){
-            var secs = msg.content.toString().split(".").length -1
+        channel.consume(queue, async function(msg){
+            //var secs = msg.content.toString().split(".").length -1
             
-            console.log("[*] received %s", msg.content.toString())
+            // insert data moongoDB with status 1
+            const str = msg.content.toString();
+            const obj = JSON.parse(str);
+
+            console.log("[*] received %s", str);
+            await insertLog(obj);
+
             
             setTimeout(() => {
                 console.log("[*] done");
@@ -32,3 +41,17 @@ amqp.connect("amqp://localhost", function(error0, connect){
     })
 
 })
+
+
+function insertLog(message){
+    const add = new Stock({
+        from        : message.from,
+        process     : message.process,
+        datetime    : message.datetime,
+        status      : GLOBAL.received_rabbit,
+        payload     : message.payload
+    })
+    add.save().then((result) => {
+        console.log(`[*] save -> received by consumer`)
+    })
+}

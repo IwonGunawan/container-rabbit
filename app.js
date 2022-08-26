@@ -1,12 +1,14 @@
 require("./utils/db")
 
-var PROTO_PATH = "./utils/stock.proto";
-var grpc = require("@grpc/grpc-js");
-var protoLoader = require("@grpc/proto-loader");
+const GLOBAL = require("./utils/global");
 const amqp = require("amqplib/callback_api");
 const Stock = require("./models/stock");
 
-// SETUP GRPC 
+/* SETUP GRPC */
+var PROTO_PATH = "./utils/stock.proto";
+var grpc = require("@grpc/grpc-js");
+var protoLoader = require("@grpc/proto-loader");
+
 var packageDefinition = protoLoader.loadSync(PROTO_PATH, {
     keepCase    : true, 
     longs       : String,
@@ -15,17 +17,17 @@ var packageDefinition = protoLoader.loadSync(PROTO_PATH, {
     oneofs      : true
 });
 var stock_proto = grpc.loadPackageDefinition(packageDefinition).stock;
-// END
+/* END */
 
 
 function main(){
     var server = new grpc.Server();
     server.addService(stock_proto.StockService.service, {setup : received});
     server.bindAsync(
-        "127.0.0.1:50051", 
+        GLOBAL.grpc_port, 
         grpc.ServerCredentials.createInsecure(),
         (error, result) => {
-            console.log("server container-rabbit running at port 50051")
+            console.log("server running at port 50051")
             server.start();
         }
     )
@@ -45,12 +47,14 @@ function received(call, callback){
 
 function insertLog(message){
     const add = new Stock({
-        gateway : message.gateway,
-        datetime: message.datetime,
-        data    : message.data
+        from        : message.from,
+        process     : message.process,
+        datetime    : message.datetime,
+        status      : GLOBAL.sent_rabbit,
+        payload     : message.payload
     })
     add.save().then((result) => {
-        console.log("successfully save log to noSql")
+        console.log(`[*] save -> before consumer`)
     })
 }
 
@@ -60,9 +64,9 @@ function sendToRabbit(message) {
             console.log("rabbitMQ is OFF")
             //throw error0
         } else {
-            connect.createChannel( async function (error1, channel) {
+            connect.createChannel( async (error1, channel) => {
                 if (error1) {
-                    console.log("problem create channel rabbitMQ")
+                    console.log("create channel rabbitMQ FAILED")
                     //throw error1
                 }
 
@@ -74,13 +78,12 @@ function sendToRabbit(message) {
                 channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)), {
                     persistent: true
                 })
-                var iDate = parseInt(message.datetime);
-                console.log(`[*] sent with datetime ${iDate}`);
+                console.log(`[*] sent to rabbit`);
                 
                 // remove data from mongoDB
-                await Stock.deleteOne({ datetime: iDate}).then(() => {
-                    console.log(`${iDate} berhasil di hapus`)
-                })
+                // await Stock.deleteOne({ datetime: iDate}).then(() => {
+                //     console.log(`[*] deleted ${iDate}`)
+                // })
             });
         }
 
@@ -91,3 +94,21 @@ function sendToRabbit(message) {
 }
 
 main();
+
+
+
+/*
+id
+from        : 
+process     : create_order
+status      : 0=sent rabbit, 1=received rabbit
+payload     : {}
+
+
+orderA-0
+orderA-1
+orderB-0
+orderB-1
+orderC-0 --> diproses ketika kapan ? bagaimana cara membedakan order yang udah diproses dan belum ?
+*/
+

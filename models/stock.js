@@ -2,13 +2,19 @@ const mongoose = require("mongoose")
 
 // create schema
 const Stock = mongoose.model('stock', {
-    gateway: {
+    from: {
         type: String,
+    },
+    process: {
+        type: String
     },
     datetime: {
         type: Number
     },
-    data: {
+    status: {
+        type: Number
+    },
+    payload: {
         type: Object
     }
 })
