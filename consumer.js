@@ -32,7 +32,7 @@ amqp.connect("amqp://localhost", function(error0, connect){
             
             setTimeout(() => {
                 console.log("[*] done");
-                channel.ack(msg) // Message acknowledgment : untuk kirim ulang message
+                channel.ack(msg) // Message acknowledgment : resend message
             }, 30000);
         }, {
             noAck: false // Message acknowledgment

@@ -20,16 +20,6 @@ var stock_proto = grpc.loadPackageDefinition(packageDefinition).stock;
 
 
 function main(){
-    // var argv = parseArgs(process.argv.slice(2), {
-    //     string : "target"
-    // });
-    // var target;
-    // if (argv.target) {
-    //     target = argv.target;
-    // }else{
-    //     target = "127.0.0.1:50051"
-    // }
-
     var client = new stock_proto.StockService(
         GLOBAL.grpc_port, 
         grpc.credentials.createInsecure()
@@ -55,3 +45,15 @@ function main(){
 }
 
 main();
+
+
+
+/* var argv = parseArgs(process.argv.slice(2), {
+    string : "target"
+});
+var target;
+if (argv.target) {
+    target = argv.target;
+}else{
+    target = "127.0.0.1:50051"
+} */

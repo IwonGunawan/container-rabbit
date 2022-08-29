@@ -74,6 +74,10 @@ function sendToRabbit(message) {
                 channel.assertQueue(queue, {
                     durable: true
                 })
+                /*
+                check countList() and getList()
+                <this here>
+                */
 
                 channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)), {
                     persistent: true
